@@ -1,0 +1,1 @@
+export default function handler(req,res){return res.status(200).json({service:'flashsitasi-ai-admin',status:'ready',mode:'safe-draft-only',liveReplies:false,geminiConfigured:!!process.env.GEMINI_API_KEY});}

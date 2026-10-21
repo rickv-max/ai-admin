@@ -1,0 +1,1 @@
+export default function handler(req,res){return res.status(503).json({posted:false,error:'Live TikTok replies intentionally disabled until developer API authorization and safety verification.'});}
