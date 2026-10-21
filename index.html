@@ -1,1 +1,88 @@
-<!doctype html><html lang="id"><meta charset="utf-8"><title>Flash Sitasi AI Admin</title><body style="font:18px system-ui;background:#101522;color:#e9f2fa;padding:50px"><h1>Flash Sitasi — TikTok AI Admin</h1><p>Safe mode • No automatic TikTok replies enabled</p><a style="color:#93d6fd" href="/api/health">Check system health</a></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>Flash Sitasi — AI Admin Test</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#0b1220;color:#f1f5f9}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(900px 500px at 20% 0%,#273a58 0%,#0b1220 65%);padding:24px}
+main{max-width:760px;margin:48px auto}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;border:1px solid #345976;background:#193247;border-radius:99px;padding:8px 12px;color:#9dd9ff;font-size:12px;font-weight:700;letter-spacing:.06em}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1;letter-spacing:-.045em;margin:20px 0 10px}
+.intro{color:#a6b4c6;font-size:16px;line-height:1.6;margin:0 0 24px}
+.card{padding:28px;background:#141f30;border:1px solid #334155;border-radius:22px;box-shadow:0 15px 55px #0004}
+label{display:block;font-size:14px;font-weight:600;margin:0 0 9px}
+input,textarea{width:100%;font:inherit;background:#0d1726;color:#f1f5f9;border:1px solid #42526a;border-radius:12px;padding:14px 15px;outline:none}
+input:focus,textarea:focus{border-color:#65b7ff;box-shadow:0 0 0 3px #2280cb33}
+textarea{min-height:112px;resize:vertical}.field{margin-bottom:22px}
+.hint{display:block;color:#94a3b8;font-size:12px;margin-top:8px;line-height:1.5}
+.samples{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 22px}
+.chip{border:1px solid #42526a;border-radius:20px;padding:7px 12px;color:#d9e8f5;background:#203047;cursor:pointer;font-size:12px}
+button{font-family:inherit;cursor:pointer}
+.primary{width:100%;border:0;border-radius:12px;background:#6db8ff;color:#061323;font-weight:800;font-size:15px;padding:15px}
+.primary:disabled{opacity:.6;cursor:wait}
+.output{border:1px solid #334155;background:#0d1726;border-radius:14px;padding:18px;margin-top:20px;white-space:pre-wrap;line-height:1.55;word-break:break-word}
+.output[hidden]{display:none}.sub{color:#9fb0c7;font-size:13px;margin-top:6px}
+footer{color:#9fb0c7;font-size:12px;line-height:1.65;margin:18px 0}
+code{color:#b9e0ff}.status{color:#b6cae2;font-size:12px}
+@media(max-width:520px){body{padding:14px}main{margin:15px auto}.card{padding:18px}}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><span class="tag">FLASHSITASI · AI ADMIN</span><span class="status" id="health">Memeriksa layanan...</span></div>
+<h1>Uji jawaban AI<br>sebelum live.</h1>
+<p class="intro">Coba cara Gemini menjawab pertanyaan TikTok tentang Flash Sitasi. Ini hanya simulasi: <strong>tidak ada balasan yang dikirim ke TikTok.</strong></p>
+<section class="card">
+<form id="testForm" autocomplete="off">
+<div class="field">
+<label for="secret">ADMIN_SECRET</label>
+<input id="secret" type="password" name="admin_secret" placeholder="Masukkan rahasia admin dari Vercel" autocomplete="off" required>
+<span class="hint">Isi nilai ADMIN_SECRET yang kamu simpan di Vercel. Tidak disimpan di browser, localStorage, atau URL. Jangan bagikan kepada orang lain.</span>
+</div>
+<div class="field">
+<label for="comment">Komentar untuk dites</label>
+<textarea id="comment" maxlength="1000" required placeholder="Contoh: Min, cara pakai DOI gimana?"></textarea>
+<div class="samples" aria-label="Contoh komentar">
+<button class="chip" type="button" data-comment="Min, cara pakai DOI gimana?">Cara pakai DOI</button>
+<button class="chip" type="button" data-comment="Bisa buat daftar pustaka untuk skripsi?">Daftar pustaka</button>
+<button class="chip" type="button" data-comment="Min, kalau pembayaran gagal gimana?">Komplain pembayaran</button>
+</div>
+</div>
+<button class="primary" type="submit" id="send">Buat draft balasan Gemini</button>
+</form>
+<div class="output" id="output" role="status" aria-live="polite" hidden></div>
+</section>
+<footer>Mode keamanan: <strong>safe-draft-only</strong>. Komentar sensitif dapat diarahkan ke review manual. Endpoint tes membutuhkan ADMIN_SECRET. Belum terhubung untuk mengirim komentar asli.</footer>
+</main>
+<script>
+const form=document.getElementById('testForm');
+const secret=document.getElementById('secret');
+const comment=document.getElementById('comment');
+const output=document.getElementById('output');
+const send=document.getElementById('send');
+document.querySelectorAll('[data-comment]').forEach(el=>el.addEventListener('click',()=>{comment.value=el.dataset.comment;comment.focus();}));
+fetch('/api/health',{cache:'no-store'}).then(r=>r.json()).then(data=>{
+ document.getElementById('health').textContent=data.status==='ready'?'● Backend online · Live replies OFF':'Status perlu diperiksa';
+}).catch(()=>{document.getElementById('health').textContent='Status belum tersedia';});
+form.addEventListener('submit',async e=>{
+ e.preventDefault();const s=secret.value.trim(),c=comment.value.trim();
+ if(!s||!c)return;
+ send.disabled=true;send.textContent='Meminta jawaban Gemini...';
+ output.hidden=false;output.textContent='Menghubungi Gemini...';
+ try{
+  const response=await fetch('/api/preview',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','x-admin-secret':s},body:JSON.stringify({comment:c})});
+  const result=await response.json();
+  if(!response.ok){output.textContent='Gagal ('+response.status+'): '+(result.error||'Periksa konfigurasi atau ADMIN_SECRET');return;}
+  if(result.action==='review'){output.textContent='Perlu pemeriksaan manusia. AI sengaja tidak membuat balasan otomatis untuk komentar ini.';return;}
+  if(result.action==='draft'){output.textContent='DRAFT AI (belum dikirim ke TikTok):\n\n'+result.reply;return;}
+  output.textContent='Respons tidak dikenali. Periksa endpoint.';
+ }catch{output.textContent='Gagal menghubungi backend. Periksa koneksi atau deployment.';}
+ finally{send.disabled=false;send.textContent='Buat draft balasan Gemini';}
+});
+</script>
+</body>
+</html>
